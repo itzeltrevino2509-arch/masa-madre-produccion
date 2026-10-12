@@ -1,0 +1,271 @@
+
+
+<!DOCTYPE html>
+
+<html lang="es">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<title>Masa Madre | Producción</title>
+
+<style>
+
+*{box-sizing:border-box}
+
+body{margin:0;background:#f8f6ef;color:#283d30;font-family:Arial,sans-serif}
+
+header{background:#244735;color:white;padding:24px 18px;border-radius:0 0 22px 22px}
+
+header h1{margin:8px 0}
+
+nav{display:flex;gap:6px;padding:12px;position:sticky;top:0;background:#f8f6ef}
+
+button{border:0;border-radius:10px;padding:12px;background:#e4eae2;color:#244735;font-weight:bold}
+
+nav button{flex:1}
+
+nav button.active,.primary{background:#244735;color:white}
+
+main{padding:0 12px 30px;max-width:700px;margin:auto}
+
+.card{background:white;border-radius:16px;padding:15px;margin-bottom:12px;border:1px solid #e5e4dc}
+
+h2{font-size:19px;margin-top:0}
+
+.task{padding:12px 0;border-bottom:1px solid #eee}
+
+.task:last-child{border-bottom:0}
+
+.task label{display:flex;gap:10px;align-items:flex-start;font-weight:bold}
+
+.task input[type=checkbox]{width:22px;height:22px;accent-color:#244735}
+
+.small{padding:8px;margin:5px 4px 0 0}
+
+input:not([type=checkbox]),select{width:100%;padding:11px;border:1px solid #ccc;border-radius:8px;margin:5px 0 12px;font-size:16px}
+
+.full{width:100%}
+
+.muted{font-size:13px;color:#777}
+
+.tag{font-size:12px;color:#42664b}
+
+.progress{height:8px;background:#e5e5df;border-radius:8px;overflow:hidden;margin:10px 0}
+
+.progress div{height:100%;background:#62956a}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+
+<div>BOULANGERIE · PRODUCCIÓN</div>
+
+<h1>🥐 Masa Madre</h1>
+
+Organiza el día. Controla el tiempo. Sal temprano.
+
+</header>
+
+<nav>
+
+<button class="active" onclick="show('morning',this)">☀️ Mañana</button>
+
+<button onclick="show('afternoon',this)">🌙 Tarde</button>
+
+<button onclick="show('settings',this)">⚙️ Ajustes</button>
+
+</nav>
+
+<main id="app"></main>
+
+<script>
+
+const initial={
+
+morning:[
+
+["Panadería","Hornear pan"],["Panadería","Decorar el pan"],["Panadería","Hacer croissants de jamón y queso"],["Panadería","Preparar paninis"],
+
+["Chilaquiles y desayunos","Calentar salsas de chilaquiles"],["Chilaquiles y desayunos","Ordenar el área de chilaquiles"],["Chilaquiles y desayunos","Preparar salsa para tostadas y ramequines"],["Chilaquiles y desayunos","Hacer tortitas de atún"],["Chilaquiles y desayunos","Hacer guacamole"],["Chilaquiles y desayunos","Preparar aguacate con pico de gallo"],["Chilaquiles y desayunos","Picar lechuga"],
+
+["Barra fría y ensaladas","Rellenar la línea de ensaladas"],["Barra fría y ensaladas","Preparar pasta fusilli y penne"],["Barra fría y ensaladas","Preparar pasta con atún"],
+
+["Cocina y guarniciones","Hacer mole"],["Cocina y guarniciones","Poner pollo Piri Piri a la plancha"],["Cocina y guarniciones","Poner pollo de mole en la plancha"],["Cocina y guarniciones","Hacer arroz (2 kilos)"],["Cocina y guarniciones","Hacer frijoles refritos"],["Cocina y guarniciones","Hacer empanadas de carne"],
+
+["Pastas y platillos calientes","Calentar el bistec"],["Pastas y platillos calientes","Calentar la lasaña"],["Pastas y platillos calientes","Calentar la boloñesa"],["Pastas y platillos calientes","Calentar las cremas"],
+
+["Hamburguesas","Preparar la carne de hamburguesas"],["Hamburguesas","Picar tomate en rodajas"],["Hamburguesas","Preparar lechuga para hamburguesa"]
+
+],
+
+afternoon:[
+
+["Salsas y cremas","Salsa verde para chilaquiles"],["Salsas y cremas","Salsa roja para chilaquiles"],["Salsas y cremas","Crema de zanahoria"],["Salsas y cremas","Crema de calabacita"],["Preparaciones","Crotones"],["Panadería","Croissant cake"],["Panadería","New York"],["Preparaciones","Tortitas de atún"],["Preparaciones","Lasañas"],["Preparaciones","Mole"],["Preparaciones","Frijoles"],["Salsas y cremas","Salsa de tostadas"]
+
+]};
+
+const key='masa-madre-app-v1';
+
+let db;
+
+try{db=JSON.parse(localStorage.getItem(key))}catch(e){}
+
+if(!db||!db.tasks){
+
+db={tasks:{},runs:{},history:[],date:new Date().toLocaleDateString()};
+
+for(const s of ['morning','afternoon'])db.tasks[s]=initial[s].map((x,i)=>({id:s+i,group:x[0],name:x[1],person:'Sin asignar',minutes:s==='morning'?20:30,enabled:true}));
+
+}
+
+function save(){localStorage.setItem(key,JSON.stringify(db))}
+
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+
+function fmt(n){n=Math.max(0,Math.floor(n/1000));return Math.floor(n/60)+'m '+String(n%60).padStart(2,'0')+'s'}
+
+function show(section,button){
+
+document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+
+if(button)button.classList.add('active');
+
+if(section==='settings'){settings();return}
+
+const tasks=db.tasks[section].filter(t=>t.enabled);
+
+const groups=[...new Set(tasks.map(t=>t.group))];
+
+const done=tasks.filter(t=>db.runs[t.id]?.end).length;
+
+document.getElementById('app').innerHTML=`
+
+<div class="card"><h2>${section==='morning'?'☀️ Producción de la mañana':'🌙 Producción de la tarde'}</h2>
+
+<div>Completadas: <b>${done}/${tasks.length}</b></div>
+
+<div class="progress"><div style="width:${tasks.length?done/tasks.length*100:0}%"></div></div>
+
+<div class="muted">${section==='morning'?'Meta: 12:00 p. m.':'Preparaciones para el siguiente servicio'}</div></div>`+
+
+groups.map(g=>`<div class="card"><h2>${esc(g)}</h2>${tasks.filter(t=>t.group===g).map(t=>{
+
+const r=db.runs[t.id]||{},running=r.start&&!r.end;
+
+const elapsed=running?Date.now()-r.start:r.elapsed||0;
+
+return `<div class="task"><label><input type="checkbox" ${r.end?'checked':''} onchange="finish('${t.id}',this.checked)"><span>${esc(t.name)}<br><span class="tag">${r.end?'✅ Terminada':running?'⏱ En proceso':'Pendiente'} · ${esc(t.person)}</span></span></label>
+
+<div class="muted">Tiempo estimado: ${t.minutes} min · ${r.end?'Duración real: '+fmt(elapsed):running?'Tiempo transcurrido: '+fmt(elapsed):''}</div>
+
+<button class="small primary" onclick="start('${t.id}','${section}')">▶ Iniciar</button><button class="small" onclick="edit('${t.id}','${section}')">✏️ Editar</button></div>`;
+
+}).join('')}</div>`).join('')+
+
+`<div class="card"><h2>📚 Historial</h2>${db.history.slice(-10).reverse().map(h=>`<p>${esc(h.date)} · ${h.done} tareas terminadas</p>`).join('')||'<p class="muted">El historial aparecerá aquí al cerrar cada día.</p>'}</div>`;
+
+}
+
+function start(id,section){
+
+const r=db.runs[id];
+
+if(r&&r.start&&!r.end)return alert('Esta tarea ya tiene el cronómetro en marcha.');
+
+db.runs[id]={start:Date.now(),elapsed:0};save();show(section);
+
+}
+
+function finish(id,checked){
+
+if(checked){
+
+let r=db.runs[id];
+
+if(!r||!r.start)r={start:Date.now()};
+
+r.elapsed=Date.now()-r.start;r.end=Date.now();db.runs[id]=r;
+
+}else delete db.runs[id];
+
+save();
+
+const section=id.startsWith('morning')?'morning':'afternoon';show(section);
+
+}
+
+function edit(id,section){
+
+const t=db.tasks[section].find(x=>x.id===id);if(!t)return;
+
+const name=prompt('Nombre de la tarea:',t.name);if(name===null)return;if(!name.trim())return;
+
+const minutes=prompt('Tiempo estimado en minutos:',t.minutes);if(minutes!==null&&Number(minutes)>0)t.minutes=Number(minutes);
+
+const person=prompt('Responsable: Itzel, Jessi, Ambas o Sin asignar',t.person);
+
+t.name=name.trim();if(person!==null)t.person=person.trim()||'Sin asignar';save();show(section);
+
+}
+
+function settings(){
+
+document.getElementById('app').innerHTML=`<div class="card"><h2>⚙️ Configuración de producción</h2>
+
+<label>Turno</label><select id="section"><option value="morning">Mañana</option><option value="afternoon">Tarde</option></select>
+
+<label>Área</label><input id="group" placeholder="Ej. Panadería">
+
+<label>Nombre de la tarea</label><input id="name" placeholder="Ej. Preparar salsa">
+
+<label>Responsable</label><select id="person"><option>Sin asignar</option><option>Itzel</option><option>Jessi</option><option>Ambas</option></select>
+
+<label>Tiempo estimado (minutos)</label><input id="minutes" type="number" value="20" min="1">
+
+<button class="primary full" onclick="add()">＋ Agregar tarea</button></div>`+
+
+['morning','afternoon'].map(s=>`<div class="card"><h2>${s==='morning'?'☀️ Lista maestra de mañana':'🌙 Lista maestra de tarde'}</h2>${db.tasks[s].map(t=>`<div class="task"><b>${t.enabled?'':'🚫 '}${esc(t.name)}</b><div class="muted">${esc(t.group)} · ${esc(t.person)} · ${t.minutes} min</div><button class="small" onclick="edit('${t.id}','${s}')">Editar</button><button class="small" onclick="removeTask('${t.id}','${s}')">${t.enabled?'Quitar':'Restaurar'}</button></div>`).join('')}</div>`).join('')+
+
+`<div class="card"><h2>📚 Historial</h2>${db.history.map(h=>`<p>${esc(h.date)} · ${h.done} tareas completadas</p>`).join('')||'<p class="muted">Aún no hay registros anteriores.</p>'}</div>`;
+
+}
+
+function add(){
+
+const s=document.getElementById('section').value,n=document.getElementById('name').value.trim();
+
+if(!n)return alert('Escribe el nombre de la tarea.');
+
+db.tasks[s].push({id:'task'+Date.now(),group:document.getElementById('group').value.trim()||'General',name:n,person:document.getElementById('person').value,minutes:Math.max(1,Number(document.getElementById('minutes').value)||20),enabled:true});
+
+save();settings();
+
+}
+
+function removeTask(id,s){const t=db.tasks[s].find(x=>x.id===id);if(t)t.enabled=!t.enabled;save();settings()}
+
+function closeDay(){
+
+const all=Object.values(db.runs).filter(r=>r.end).length;
+
+db.history.push({date:db.date,done:all});
+
+db.runs={};db.date=new Date().toLocaleDateString();save();alert('Día registrado en el historial.');show('morning');
+
+}
+
+save();show('morning',document.querySelector('nav button'));
+
+</script>
+
+</body>
+
+</html>
