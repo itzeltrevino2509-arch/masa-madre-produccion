@@ -13,6 +13,114 @@
 <title>Masa Madre | Producción</title>
 
 <style>
+/* NUEVA IDENTIDAD VISUAL: MASA MADRE */
+body {
+  background: #F8F2E9;
+  color: #293E32;
+  font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+}
+header {
+  background: linear-gradient(135deg, #203F30, #38634A);
+  padding: 30px 20px;
+  border-radius: 0 0 28px 28px;
+  box-shadow: 0 5px 18px #24473520;
+}
+header h1 {
+  font-size: 32px;
+  letter-spacing: -1px;
+}
+nav {
+  background: #F8F2E9;
+  gap: 8px;
+}
+nav button {
+  min-height: 54px;
+  border-radius: 16px;
+  background: #E8E9DF;
+  color: #294936;
+}
+nav button:nth-child(2) {
+  background: #F7E2E4;
+  color: #8D4554;
+}
+nav button:nth-child(3) {
+  background: #F0E4D4;
+  color: #70543B;
+}
+nav button.active,
+nav button.active:nth-child(2),
+nav button.active:nth-child(3),
+.primary {
+  background: #294936;
+  color: #FFFFFF;
+}
+.card {
+  background: #FFFCF7;
+  border: 1px solid #E9DED1;
+  border-radius: 22px;
+  padding: 18px;
+  box-shadow: 0 4px 14px #49352208;
+}
+.card h2 {
+  color: #8E4055;
+  font-size: 21px;
+  line-height: 1.35;
+}
+.task {
+  padding: 14px 10px;
+  margin: 8px 0;
+  border: 0;
+  border-radius: 15px;
+  background: #F9EDEF;
+}
+.task:nth-child(even) {
+  background: #F8F0E2;
+}
+.task:nth-child(3n) {
+  background: #EDF3E9;
+}
+.task label {
+  line-height: 1.4;
+}
+.task input[type=checkbox] {
+  width: 23px;
+  height: 23px;
+  accent-color: #38634A;
+  flex-shrink: 0;
+}
+.task:has(input:checked) {
+  background: #E3EFE2;
+}
+button {
+  border-radius: 12px;
+  transition: background .2s ease;
+}
+button.small:not(.primary) {
+  background: #E9E2D6;
+  color: #594733;
+}
+.tag {
+  color: #53765B;
+  line-height: 1.8;
+}
+.progress {
+  height: 11px;
+  background: #EAE4DA;
+  border-radius: 20px;
+}
+.progress div {
+  background: linear-gradient(90deg, #315B40, #91B58A);
+  border-radius: 20px;
+}
+input:not([type=checkbox]), select {
+  border: 1px solid #DCCFC0;
+  border-radius: 12px;
+  background: #FFFCF7;
+}
+.muted {
+  color: #81786F;
+}
+
 
 *{box-sizing:border-box}
 
